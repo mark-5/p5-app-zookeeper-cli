@@ -1,0 +1,11 @@
+An interactive command line client for ZooKeeper. Provides a shell like interface to ZooKeeper nodes.
+
+Usage: zkcli [SERVER]
+
+Provides:
+    cat
+    cd
+    ls
+    rm
+    stat
+    touch
