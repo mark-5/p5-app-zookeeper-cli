@@ -1,11 +1,11 @@
 #!/usr/bin/env perl
 use strict; use warnings;
-use ZooKeeper::CLI;
+use App::ZooKeeper::CLI;
 use Term::ReadLine;
 use Try::Tiny;
 
 my $hosts = shift || 'localhost:2181';
-my $cli   = ZooKeeper::CLI->new(hosts => $hosts);
+my $cli   = App::ZooKeeper::CLI->new(hosts => $hosts);
 
 my $read = -t STDIN ? sub { $cli->readline } : sub { <STDIN> };
 while (defined (my $line = $read->())) {

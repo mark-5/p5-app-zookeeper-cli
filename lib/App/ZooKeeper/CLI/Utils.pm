@@ -1,4 +1,4 @@
-package ZooKeeper::CLI::Utils;
+package App::ZooKeeper::CLI::Utils;
 use strict;
 use warnings;
 use List::Util qw(reduce);

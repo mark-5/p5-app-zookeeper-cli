@@ -1,6 +1,6 @@
 use strict; use warnings;
 use Test::More;
-use ZooKeeper::CLI::Utils qw(
+use App::ZooKeeper::CLI::Utils qw(
     collapse_path
     get_parent
     join_paths

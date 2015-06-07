@@ -1,4 +1,4 @@
-package ZooKeeper::CLI;
+package App::ZooKeeper::CLI;
 use ZooKeeper;
 use Moo;
 use 5.10.1;
@@ -21,8 +21,8 @@ sub _build_handle {
 }
 
 with qw(
-    ZooKeeper::CLI::Role::HasCommands
-    ZooKeeper::CLI::Role::HasTerminal
+    App::ZooKeeper::CLI::Role::HasCommands
+    App::ZooKeeper::CLI::Role::HasTerminal
 );
 
 1;

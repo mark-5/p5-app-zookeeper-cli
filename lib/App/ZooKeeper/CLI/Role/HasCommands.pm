@@ -1,7 +1,7 @@
-package ZooKeeper::CLI::Role::HasCommands;
+package App::ZooKeeper::CLI::Role::HasCommands;
 use Data::Dumper;
 $Data::Dumper::Sortkeys = 1;
-use ZooKeeper::CLI::Utils qw(qualify_path);
+use App::ZooKeeper::CLI::Utils qw(qualify_path);
 use Moo::Role;
 
 our @COMMANDS = qw(
@@ -63,7 +63,7 @@ sub stat {
 }
 
 
-with qw(ZooKeeper::CLI::Role::HasSession);
+with qw(App::ZooKeeper::CLI::Role::HasSession);
 requires qw(handle);
 
 1;

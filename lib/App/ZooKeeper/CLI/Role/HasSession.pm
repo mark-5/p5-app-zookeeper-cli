@@ -1,4 +1,4 @@
-package ZooKeeper::CLI::Role::HasSession;
+package App::ZooKeeper::CLI::Role::HasSession;
 use Moo::Role;
 
 has current_node => (

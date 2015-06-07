@@ -1,9 +1,9 @@
-package ZooKeeper::CLI::Role::HasTerminal;
+package App::ZooKeeper::CLI::Role::HasTerminal;
 use Scalar::Util qw(weaken);
 use Term::ReadLine;
 use Text::ParseWords qw(shellwords);
 use Try::Tiny;
-use ZooKeeper::CLI::Utils qw(
+use App::ZooKeeper::CLI::Utils qw(
     collapse_path
     get_parent
     join_paths
@@ -17,7 +17,7 @@ has term => (
 );
 sub _build_term {
     my ($self) = @_;
-    my $term   = Term::ReadLine->new("ZooKeeper CLI");
+    my $term   = Term::ReadLine->new("App::ZooKeeper CLI");
     $self->_attach_autocomplete($term);
     return $term;
 }
@@ -117,8 +117,8 @@ sub match_nodes {
 
 
 with qw(
-    ZooKeeper::CLI::Role::HasSession
-    ZooKeeper::CLI::Role::HasCommands
+    App::ZooKeeper::CLI::Role::HasSession
+    App::ZooKeeper::CLI::Role::HasCommands
 );
 
 1;
