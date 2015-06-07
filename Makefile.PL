@@ -2,8 +2,7 @@ use strict;
 use warnings;
 use inc::Module::Install;
 
-name 'ZooKeeper-CLI';
-version '0.0.1';
+all_from 'lib/ZooKeeper/CLI.pm';
 license 'Perl_5';
 
 install_script 'bin/zkcli';

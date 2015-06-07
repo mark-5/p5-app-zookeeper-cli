@@ -5,23 +5,10 @@ use Term::ReadLine;
 use Try::Tiny;
 
 my $hosts = shift || 'localhost:2181';
+my $cli   = ZooKeeper::CLI->new(hosts => $hosts);
 
-my $term = Term::ReadLine->new('ZooKeeper CLI');
-my $cli  = ZooKeeper::CLI->new(hosts => $hosts);
-
-while (defined (my $line = $term->readline(sprintf "%s: ", $cli->current_node))) {
-    next unless $line =~ /\S/;
-    my ($cmd, $args) = split /\s+/, $line, 2;
-    if (my $method = $cli->can($cmd)) {
-        my $results = try {
-            return $cli->$method($args)
-        } catch {
-            warn $_;
-            return undef;
-        };
-        print "$results\n" if $results;
-    } else {
-        print "Unrecognized command: $cmd\n";
-    }
-    $term->addhistory($line);
+my $read = -t STDIN ? sub { $cli->readline } : sub { <STDIN> };
+while (defined (my $line = $read->())) {
+    $cli->execute($line);
 }
+

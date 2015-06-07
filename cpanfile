@@ -1,7 +1,11 @@
-requires 'Moo';
-requires 'Term::ReadLine';
-requires 'Try::Tiny';
-requires 'ZooKeeper';
+requires "Exporter::Tiny";
+requires "List::Util";
+requires "Moo";
+requires "Scalar::Util";
+requires "Term::ReadLine";
+requires "Text::ParseWords";
+requires "Try::Tiny";
+requires "ZooKeeper";
 
-test_requires 'Test::Compile';
-test_requires 'Test::More';
+test_requires "Test::More";
+test_requires "Test::Strict";
