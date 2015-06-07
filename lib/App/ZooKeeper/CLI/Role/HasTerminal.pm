@@ -64,9 +64,8 @@ sub _attach_autocomplete {
     my $attr = $self->_autocomplete_attr($term);
     return unless $attr;
 
-    my $wself = $self;
+    weaken(my $wself = $self);
     $term->Attribs->{$attr} = sub { $wself->_autocomplete(@_) };
-    weaken($wself);
 }
 
 sub _autocomplete {
@@ -83,7 +82,9 @@ sub _autocomplete {
     } else {
         my $term = $self->term;
         $term->Attribs->{attempted_completion_over} = 1;
-        return $term->completion_matches($text, sub { @matches });
+
+        my $i = 0;
+        return $term->completion_matches($text, sub { $matches[$i++] });
     }
 }
 
