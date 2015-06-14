@@ -7,6 +7,7 @@ use Moo::Role;
 our @COMMANDS = qw(
     cat
     cd
+    exit
     ls
     rm
     stat
@@ -61,6 +62,8 @@ sub stat {
     $path = qualify_path($path => $self->current_node);
     return Dumper +($self->handle->get($path))[1];
 }
+
+sub exit { exit(0) }
 
 
 with qw(App::ZooKeeper::CLI::Role::HasSession);

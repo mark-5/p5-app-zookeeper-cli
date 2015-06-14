@@ -110,10 +110,14 @@ sub match_nodes {
     my $parent = get_parent($collapsed);
     my @children  = split /\s+/, $self->ls($parent);
     my @qualified = map join_paths($parent, $_), @children;
-    my @with_slashes = map {
-        $self->ls($_) ? ($_, "$_/") : $_
-    } @qualified;
-    return grep /^$collapsed/, @with_slashes;
+
+    my @matches = grep /^$collapsed/, @qualified;
+    if (@matches == 1) {
+        push @matches, map {
+            join_paths($matches[0], $_)
+        } shellwords($self->ls($matches[0]));
+    }
+    return @matches;
 }
 
 
