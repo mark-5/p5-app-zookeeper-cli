@@ -6,25 +6,27 @@ pzkcli - command line client for ZooKeeper
 
 An interactive command line client for ZooKeeper. Provides a shell like interface to ZooKeeper nodes.
 
+Single commands can also be piped into STDIN.
+
 =head1 SYNOPSIS
 
     pzkcli [SERVER]
 
 =head1 SHELL COMMANDS
 
-=head2 cat
+=head2 add_auth
 
 =head2 cd
 
 =head2 create
+
+=head2 delete
 
 =head2 get
 
 =head2 get_acl
 
 =head2 ls
-
-=head2 rm
 
 =head2 set
 
