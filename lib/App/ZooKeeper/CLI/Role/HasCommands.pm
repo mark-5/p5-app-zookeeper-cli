@@ -27,9 +27,9 @@ sub BUILD {
         my ($scheme, $creds) = @$args;
         $self->handle->add_auth($scheme, $creds, %$opts);
         return;
-    }, opts => {
-        encoded => undef,
-    }, usage => "[--encoded] <scheme> <credentials>");
+    }, opt_spec => [
+        [ "encoded|e" ]
+    ], usage_desc => "<scheme> <credentials>");
 
     $self->add_command("cd", code => sub {
         my ($opts, $args) = @_;
@@ -41,7 +41,7 @@ sub BUILD {
         $self->previous_node($self->current_node);
         $self->current_node($path);
         return;
-    }, usage => "<path>");
+    }, usage_desc => "<path>");
 
     $self->add_command("create", code => sub {
         my ($opts, $args) = @_;
@@ -49,17 +49,17 @@ sub BUILD {
         $opts->{value} = defined $args->[1] ? $args->[1] : "";
         $self->handle->create($path, persistent => 1, %$opts);
         return;
-    }, opts => {
-        persistent => undef,
-        sequential => undef,
-    }, usage => "[--persistent|--sequential] <path> <value>");
+    }, opt_spec => [
+        [ "persistent|p" ],
+        [ "sequential|s" ]
+    ], usage_desc => "<path> <value>");
 
     $self->add_command("delete", code => sub {
         my ($opts, $args) = @_;
         my $path = qualify_path($args->[0] => $self->current_node);
         $self->handle->delete($path);
         return;
-    }, usage => "<path>");
+    }, usage_desc => "<path>");
 
     $self->add_command("exit", code => sub { exit 0 });
 
@@ -67,20 +67,18 @@ sub BUILD {
         my ($opts, $args) = @_;
         my $path = qualify_path($args->[0] => $self->current_node);
         return scalar $self->handle->get($path);
-    }, usage => "<path>");
+    }, usage_desc => "<path>");
 
     $self->add_command("get_acl", code => sub {
         my ($opts, $args) = @_;
         my $path = qualify_path($args->[0] => $self->current_node);
         return $self->dump_acl($self->handle->get_acl($path));
-    }, usage => "<path>");
+    }, usage_desc => "<path>");
 
     $self->add_command("help", code => sub {
-        my $output = "\n";
         my @commands = sort {$a->name cmp $b->name} values %{$self->commands};
-        for my $cmd (@commands) {
-            $output .= sprintf("%s %s\n", $cmd->name, $cmd->usage);
-        }
+        my $output = "\n";
+        $output .= $_->usage for @commands;
         return $output;
     });
 
@@ -89,7 +87,7 @@ sub BUILD {
         my $path = qualify_path($args->[0]//"" => $self->current_node);
         $path = qualify_path($path => $self->current_node);
         return join ' ', $self->handle->get_children($path);
-    }, usage => "<path>");
+    }, usage_desc => "<path>");
 
     $self->add_command("set", code => sub {
         my ($opts, $args) = @_;
@@ -97,9 +95,9 @@ sub BUILD {
         my $value = $args->[1];
         $self->handle->set($path, $value, %$opts);
         return;
-    }, opts => {
-        version => "i"
-    }, usage => "[--version=<version>] <path> <value>");
+    }, opt_spec => [
+        [ "version|v=i" ],
+    ], usage_desc => "<path> <value>");
 
     $self->add_command("set_acl", code => sub {
         my ($opts, $args) = @_;
@@ -113,19 +111,19 @@ sub BUILD {
         }
         $self->handle->set_acl($path => $acls, version => $version);
         return;
-    }, opts => {
-        append  => undef,
-        id      => "s",
-        perms   => "s",
-        scheme  => "s",
-        version => "i",
-    }, usage => "[--id=<id>|--perms=<perms>|--scheme=<scheme>|--version=<version>] <path>");
+    }, opt_spec => [
+        [ "append|a"                    ],
+        [ "id|i=s",     {required => 1} ],
+        [ "perms|p=s",  {required => 1} ],
+        [ "scheme|s=s", {required => 1} ],
+        [ "version|v=i"                 ],
+    ], usage_desc => "<path>");
 
     $self->add_command("stat", code => sub {
         my ($opts, $args) = @_;
         my $path = qualify_path($args->[0] => $self->current_node);
         return $self->dump_hash(($self->handle->get($path))[1]);
-    }, usage => "<path>");
+    }, usage_desc => "<path>");
 
     my @watch_opts = qw(data child data exists all);
     $self->add_command("watch", code => sub {
@@ -139,9 +137,12 @@ sub BUILD {
         $handle->exists($path, watcher => $watch) if $opts->{exists};
         $handle->get_children($path, watcher => $watch) if $opts->{child};
         return;
-    }, opts => {
-        map {($_ => undef)} @watch_opts
-    }, usage => "[--child|--data|--exists|--all] <path>");
+    }, opt_spec => [
+        map {
+            my $short = substr($_, 0, 1);
+            [ "$_|$short" ];
+        } @watch_opts
+    ], usage_desc => "<path>");
 }
 
 sub as_acl {

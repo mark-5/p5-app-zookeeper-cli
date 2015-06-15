@@ -3,6 +3,7 @@ configure_requires 'Module::Install::ReadmePodFromPod';
 
 requires "AE";
 requires "Exporter::Tiny";
+requires "Getopt::Long::Descriptive";
 requires "List::Util";
 requires "Moo";
 requires "Scalar::Util";

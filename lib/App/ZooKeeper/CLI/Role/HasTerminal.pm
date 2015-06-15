@@ -113,10 +113,16 @@ sub match_commands {
 }
 
 sub match_options {
-    my ($self, $cmd, $opt) = @_;
-    my @all_opts    = sort keys %{$self->commands->{$cmd}->opts||{}};
-    my @with_dashes = map "--$_", @all_opts;
-    return grep {/^$opt/} @with_dashes;
+    my ($self, $cmd_name, $opt) = @_;
+    my $cmd = $self->commands->{$cmd_name};
+
+    my @options;
+    if ($opt =~ /^--/) {
+        @options = map "--$_", @{$cmd->long_opts};
+    } else {
+        @options = map "-$_", @{$cmd->short_opts};
+    }
+    return grep {/^$opt/} @options;
 }
 
 sub match_nodes {
