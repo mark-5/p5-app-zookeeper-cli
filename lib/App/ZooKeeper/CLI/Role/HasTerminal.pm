@@ -54,9 +54,10 @@ sub execute {
             warn $err;
             return undef;
         };
-        print "$results\n" if $results;
+        $results .= "\n" if $results and $results !~ /\n$/;
+        print $results if $results;
     } else {
-        print "Unrecognized command: $cmd\n";
+        print "Unrecognized command: $name\n";
     }
 
     $term->addhistory($line);

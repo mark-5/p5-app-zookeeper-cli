@@ -8,11 +8,6 @@ has code => (
     required => 1,
 );
 
-has docs => (
-    is      => "ro",
-    default => "",
-);
-
 has name => (
     is       => "ro",
     required => 1,
@@ -21,6 +16,11 @@ has name => (
 has opts => (
     is      => "ro",
     default => sub { {} },
+);
+
+has usage => (
+    is      => "ro",
+    default => "",
 );
 
 sub call {

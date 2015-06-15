@@ -1,6 +1,4 @@
 package App::ZooKeeper::CLI::Role::HasCommands;
-use Data::Dumper;
-$Data::Dumper::Sortkeys = 1;
 use App::ZooKeeper::CLI::Command;
 use App::ZooKeeper::CLI::Utils qw(qualify_path);
 use Scalar::Util qw(weaken);
@@ -24,12 +22,6 @@ sub BUILD {
     my ($self) = @_;
     weaken($self);
 
-    $self->add_command("cat", code => sub {
-        my ($opts, $args) = @_;
-        my $path = qualify_path($args->[0] => $self->current_node);
-        return scalar $self->handle->get($path);
-    });
-
     $self->add_command("cd", code => sub {
         my ($opts, $args) = @_;
         my $path = $args->[0] // "/";
@@ -39,42 +31,68 @@ sub BUILD {
 
         $self->previous_node($self->current_node);
         $self->current_node($path);
-        return undef;
-    });
+        return;
+    }, usage => "<path>");
 
     $self->add_command("create", code => sub {
         my ($opts, $args) = @_;
         my $path = qualify_path($args->[0] => $self->current_node);
-        return $self->handle->create($path, persistent => 1, %$opts);
+        $opts->{value} = defined $args->[1] ? $args->[1] : "";
+        $self->handle->create($path, persistent => 1, %$opts);
+        return;
     }, opts => {
         persistent => undef,
         sequential => undef,
-        value      => "s",
-    });
+    }, usage => "[--persistent|--sequential] <path> <value>");
+
+    $self->add_command("delete", code => sub {
+        my ($opts, $args) = @_;
+        my $path = qualify_path($args->[0] => $self->current_node);
+        $self->handle->delete($path);
+        return;
+    }, usage => "<path>");
 
     $self->add_command("exit", code => sub { exit 0 });
+
+    $self->add_command("get", code => sub {
+        my ($opts, $args) = @_;
+        my $path = qualify_path($args->[0] => $self->current_node);
+        return scalar $self->handle->get($path);
+    }, usage => "<path>");
+
+    $self->add_command("help", code => sub {
+        my $output = "\n";
+        my @commands = sort {$a->name cmp $b->name} values %{$self->commands};
+        for my $cmd (@commands) {
+            $output .= sprintf("%s %s\n", $cmd->name, $cmd->usage);
+        }
+        return $output;
+    });
 
     $self->add_command("ls", code => sub {
         my ($opts, $args) = @_;
         my $path = qualify_path($args->[0]//"" => $self->current_node);
         $path = qualify_path($path => $self->current_node);
         return join ' ', $self->handle->get_children($path);
-    });
+    }, usage => "<path>");
 
-    $self->add_command("rm", code => sub {
+    $self->add_command("set", code => sub {
         my ($opts, $args) = @_;
-        my $path = qualify_path($args->[0] => $self->current_node);
-        $self->handle->delete($path);
-        return undef;
-    });
+        my $path  = qualify_path($args->[0] => $self->current_node);
+        my $value = $args->[1];
+        $self->handle->set($path, $value, %$opts);
+        return;
+    }, opts => {
+        version => "i"
+    }, usage => "[--version=<version>] <path> <value>");
 
     $self->add_command("stat", code => sub {
         my ($opts, $args) = @_;
         my $path = qualify_path($args->[0] => $self->current_node);
-        return Dumper +($self->handle->get($path))[1];
-    });
+        return $self->dump_hash(($self->handle->get($path))[1]);
+    }, usage => "<path>");
 
-    my @watch_opts = qw(all data exists child);
+    my @watch_opts = qw(data child data exists all);
     $self->add_command("watch", code => sub {
         my ($opts, $args) = @_;
         if ($opts->{all}) { $opts->{$_}++ for @watch_opts };
@@ -88,7 +106,7 @@ sub BUILD {
         return;
     }, opts => {
         map {($_ => undef)} @watch_opts
-    });
+    }, usage => "[--child|--data|--exists|--all] <path>");
 }
 
 sub dump_event {
@@ -96,7 +114,14 @@ sub dump_event {
     my $clone = {%$event};
     $clone->{state} = zstate($clone->{state});
     $clone->{type}  = zevent($clone->{type});
-    return Dumper($clone);
+    return $self->dump_hash($clone);
+}
+
+sub dump_hash {
+    my ($self, $hash) = @_;
+    my $dump = "";
+    $dump .= "\t$_ = $hash->{$_}\n" for sort keys %$hash;
+    return $dump;
 }
 
 with qw(App::ZooKeeper::CLI::Role::HasSession);
