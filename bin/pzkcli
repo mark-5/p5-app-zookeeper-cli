@@ -34,11 +34,15 @@ An interactive command line client for ZooKeeper. Provides a shell like interfac
 
 =head2 get
 
+=head2 get_acl
+
 =head2 ls
 
 =head2 rm
 
 =head2 set
+
+=head2 set_acl
 
 =head2 stat
 

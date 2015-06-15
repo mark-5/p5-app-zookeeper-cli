@@ -22,6 +22,15 @@ sub BUILD {
     my ($self) = @_;
     weaken($self);
 
+    $self->add_command("add_auth", code => sub {
+        my ($opts, $args) = @_;
+        my ($scheme, $creds) = @$args;
+        $self->handle->add_auth($scheme, $creds, %$opts);
+        return;
+    }, opts => {
+        encoded => undef,
+    }, usage => "[--encoded] <scheme> <credentials>");
+
     $self->add_command("cd", code => sub {
         my ($opts, $args) = @_;
         my $path = $args->[0] // "/";
@@ -60,6 +69,12 @@ sub BUILD {
         return scalar $self->handle->get($path);
     }, usage => "<path>");
 
+    $self->add_command("get_acl", code => sub {
+        my ($opts, $args) = @_;
+        my $path = qualify_path($args->[0] => $self->current_node);
+        return $self->dump_acl($self->handle->get_acl($path));
+    }, usage => "<path>");
+
     $self->add_command("help", code => sub {
         my $output = "\n";
         my @commands = sort {$a->name cmp $b->name} values %{$self->commands};
@@ -86,6 +101,26 @@ sub BUILD {
         version => "i"
     }, usage => "[--version=<version>] <path> <value>");
 
+    $self->add_command("set_acl", code => sub {
+        my ($opts, $args) = @_;
+        my $path = qualify_path($args->[0] => $self->current_node);
+        my $append  = delete $opts->{append};
+        my $version = delete $opts->{version};
+        my $acls    = [$self->as_acl($opts)];
+        if ($append) {
+            my $existing = $self->handle->get_acl($path);
+            $acls = [@$acls, @$existing];
+        }
+        $self->handle->set_acl($path => $acls, version => $version);
+        return;
+    }, opts => {
+        append  => undef,
+        id      => "s",
+        perms   => "s",
+        scheme  => "s",
+        version => "i",
+    }, usage => "[--id=<id>|--perms=<perms>|--scheme=<scheme>|--version=<version>] <path>");
+
     $self->add_command("stat", code => sub {
         my ($opts, $args) = @_;
         my $path = qualify_path($args->[0] => $self->current_node);
@@ -107,6 +142,27 @@ sub BUILD {
     }, opts => {
         map {($_ => undef)} @watch_opts
     }, usage => "[--child|--data|--exists|--all] <path>");
+}
+
+sub as_acl {
+    my ($self, $opt) = @_;
+    my @acl_strings = split /\|/, delete $opt->{perms};
+    for my $acl_str (@acl_strings) {
+        $acl_str = uc $acl_str;
+        $opt->{perms} |= __PACKAGE__->can("ZOO_PERM_$acl_str")->();
+    }
+    return $opt;
+}
+
+sub dump_acl {
+    my ($self, $acls) = @_;
+    my @dumps;
+    for my $acl (@$acls) {
+        my $clone = {%$acl};
+        $clone->{perms} = zperm($clone->{perms});
+        push @dumps, $self->dump_hash($clone);
+    }
+    return join "\n", @dumps;
 }
 
 sub dump_event {

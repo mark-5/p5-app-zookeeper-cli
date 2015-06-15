@@ -132,7 +132,7 @@ sub match_nodes {
     if (@matches == 1) {
         push @matches, map {
             join_paths($matches[0], $_)
-        } $self->list_children($matches[0]);
+        } try { $self->list_children($matches[0]) };
     }
     return @matches;
 }
