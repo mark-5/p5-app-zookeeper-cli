@@ -42,6 +42,16 @@ sub BUILD {
         return undef;
     });
 
+    $self->add_command("create", code => sub {
+        my ($opts, $args) = @_;
+        my $path = qualify_path($args->[0] => $self->current_node);
+        return $self->handle->create($path, persistent => 1, %$opts);
+    }, opts => {
+        persistent => undef,
+        sequential => undef,
+        value      => "s",
+    });
+
     $self->add_command("exit", code => sub { exit 0 });
 
     $self->add_command("ls", code => sub {
@@ -64,23 +74,13 @@ sub BUILD {
         return Dumper +($self->handle->get($path))[1];
     });
 
-    $self->add_command("touch", code => sub {
-        my ($opts, $args) = @_;
-        my $path = qualify_path($args->[0] => $self->current_node);
-        return $self->handle->create($path, persistent => 1, %$opts);
-    }, opts => {
-        persistent => undef,
-        sequential => undef,
-        value      => "s",
-    });
-
     my @watch_opts = qw(all data exists child);
     $self->add_command("watch", code => sub {
         my ($opts, $args) = @_;
         if ($opts->{all}) { $opts->{$_}++ for @watch_opts };
         my $path = qualify_path($args->[0] => $self->current_node);
 
-        my $watch  = sub { warn "\n", $self->dump_event($_[0]) };
+        my $watch  = sub { print "\n", $self->dump_event($_[0]) };
         my $handle = $self->handle;
         $handle->get($path, watcher => $watch) if $opts->{data};
         $handle->exists($path, watcher => $watch) if $opts->{exists};
@@ -94,8 +94,8 @@ sub BUILD {
 sub dump_event {
     my ($self, $event) = @_;
     my $clone = {%$event};
-    $clone->{event} = zevent($clone->{event});
     $clone->{state} = zstate($clone->{state});
+    $clone->{type}  = zevent($clone->{type});
     return Dumper($clone);
 }
 

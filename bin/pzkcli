@@ -30,13 +30,13 @@ An interactive command line client for ZooKeeper. Provides a shell like interfac
 
 =head2 cd
 
+=head2 create
+
 =head2 ls
 
 =head2 rm
 
 =head2 stat
-
-=head2 touch
 
 =head2 watch
 
