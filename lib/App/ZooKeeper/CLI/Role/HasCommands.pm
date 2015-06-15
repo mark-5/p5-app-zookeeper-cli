@@ -18,7 +18,8 @@ sub add_command {
     );
 }
 
-sub BUILD {
+sub BUILD {}
+after BUILD => sub {
     my ($self) = @_;
     weaken($self);
 
@@ -143,7 +144,7 @@ sub BUILD {
             [ "$_|$short" ];
         } @watch_opts
     ], usage_desc => "<path>");
-}
+};
 
 sub as_acl {
     my ($self, $opt) = @_;
