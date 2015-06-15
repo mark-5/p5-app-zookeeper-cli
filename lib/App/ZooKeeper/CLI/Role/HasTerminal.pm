@@ -8,6 +8,7 @@ use App::ZooKeeper::CLI::Utils qw(
     get_parent
     join_paths
 );
+use AE;
 use Moo::Role;
 
 has term => (
@@ -18,6 +19,7 @@ has term => (
 sub _build_term {
     my ($self) = @_;
     my $term   = Term::ReadLine->new("App::ZooKeeper CLI");
+    $self->_attach_event_loop($term);
     $self->_attach_autocomplete($term);
     return $term;
 }
@@ -41,10 +43,11 @@ sub execute {
     (my $stripped = $line) =~ s/^\s+|\s+$//g;
     my $term = $self->term;
 
-    my ($cmd, @args) = shellwords($stripped);
-    if (my $method = $self->can($cmd)) {
+    my ($name) = shellwords($stripped);
+    (my $args = $line) =~ s/^\s*$name\s*//;
+    if (my $cmd = $self->commands->{$name}) {
         my $results = try {
-            return $self->$method(@args)
+            return $cmd->call($args);
         } catch {
             my $err = $_;
             $err   .= "\n" unless $err =~ /\n$/;
@@ -92,14 +95,27 @@ sub autocomplete {
     my ($self, $line) = @_;
     return $self->match_commands($line) unless $line =~ /\s+/;
 
-    my ($cmd, $args) = split /\s+/, $line, 2;
-    return $self->match_nodes($args);
+    my ($cmd, @args) = shellwords($line);
+    my $in_match = $line !~ /\s$/;
+    my $last_arg = $args[-1] // "";
+    if ($in_match and $last_arg =~ /^-/) {
+        return $self->match_options($cmd, $last_arg);
+    } else {
+        return $self->match_nodes($in_match ? $last_arg : "");
+    }
 }
 
 sub match_commands {
     my ($self, $cmd) = @_;
     $cmd ||= "";
-    return grep /^$cmd/, @{$self->commands};
+    return grep /^$cmd/, sort keys %{$self->commands};
+}
+
+sub match_options {
+    my ($self, $cmd, $opt) = @_;
+    my @all_opts    = sort keys %{$self->commands->{$cmd}->opts||{}};
+    my @with_dashes = map "--$_", @all_opts;
+    return grep {/^$opt/} @with_dashes;
 }
 
 sub match_nodes {
@@ -108,18 +124,36 @@ sub match_nodes {
     $collapsed .= "/" if $node =~ m#(?<=.)/$#;
 
     my $parent = get_parent($collapsed);
-    my @children  = split /\s+/, $self->ls($parent);
+    my @children  = $self->list_children($parent);
     my @qualified = map join_paths($parent, $_), @children;
 
     my @matches = grep /^$collapsed/, @qualified;
     if (@matches == 1) {
         push @matches, map {
             join_paths($matches[0], $_)
-        } shellwords($self->ls($matches[0]));
+        } $self->list_children($matches[0]);
     }
     return @matches;
 }
 
+sub list_children {
+    my ($self, $node) = @_;
+    return shellwords($self->commands->{ls}->call($node));
+}
+
+sub _attach_event_loop {
+    my ($self, $term) = @_;
+    $term->event_loop(sub {
+        my ($data) = @_;
+        $data->[1] = AE::cv;
+        $data->[1]->recv;
+    }, sub {
+        my ($fh) = @_;
+        my $data = [];
+        $data->[0] = AE::io($fh, 0, sub { $data->[1]->send });
+        $data;
+    });
+}
 
 with qw(
     App::ZooKeeper::CLI::Role::HasSession

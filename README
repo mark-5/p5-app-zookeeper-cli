@@ -9,3 +9,4 @@ Provides:
     rm
     stat
     touch
+    watch
