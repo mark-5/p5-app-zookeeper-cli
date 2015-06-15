@@ -25,4 +25,18 @@ with qw(
     App::ZooKeeper::CLI::Role::HasTerminal
 );
 
+=head1 NAME
+
+App::ZooKeeper::CLI
+
+=head1 AUTHOR
+
+Mark Flickinger <maf@cpan.org>
+
+=head1 LICENSE
+
+This software is licensed under the same terms as Perl itself.
+
+=cut
+
 1;

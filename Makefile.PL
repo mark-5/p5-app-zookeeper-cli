@@ -3,9 +3,9 @@ use warnings;
 use inc::Module::Install;
 
 all_from 'lib/App/ZooKeeper/CLI.pm';
-license 'Perl_5';
+readme_pod_from 'bin/pzkcli';
 
-install_script 'bin/zkcli';
+install_script 'bin/pzkcli';
 
 homepage   'https://github.com/mark-5/p5-app-zookeeper-cli';
 bugtracker 'https://github.com/mark-5/p5-app-zookeeper-cli/issues';

@@ -1,0 +1,31 @@
+=head1 NAME
+
+pzkcli - command line client for ZooKeeper
+
+=head1 DESCRIPTION
+
+An interactive command line client for ZooKeeper. Provides a shell like interface to ZooKeeper nodes.
+
+=head1 SYNOPSIS
+
+    pzkcli [SERVER]
+
+=head1 SHELL COMMANDS
+
+=head2 cat
+
+=head2 cd
+
+=head2 ls
+
+=head2 rm
+
+=head2 stat
+
+=head2 touch
+
+=head2 watch
+
+
+=cut
+

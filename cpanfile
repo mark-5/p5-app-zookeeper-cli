@@ -1,3 +1,6 @@
+configure_requires 'Module::Install::CPANfile';
+configure_requires 'Module::Install::ReadmePodFromPod';
+
 requires "AE";
 requires "Exporter::Tiny";
 requires "List::Util";
