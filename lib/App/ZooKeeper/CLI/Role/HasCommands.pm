@@ -121,7 +121,6 @@ add_cmd ls => (
 sub cmd_ls {
     my ($self, $opts, $args) = @_;
     my $path = qualify_path($args->[0]//"" => $self->current_node);
-    $path = qualify_path($path => $self->current_node);
     return join ' ', $self->handle->get_children($path);
 }
 
@@ -154,11 +153,13 @@ sub cmd_set_acl {
     my $path = qualify_path($args->[0] => $self->current_node);
     my $append  = delete $opts->{append};
     my $version = delete $opts->{version};
+
     my $acls    = [$self->as_acl($opts)];
     if ($append) {
         my $existing = $self->handle->get_acl($path);
         $acls = [@$acls, @$existing];
     }
+
     $self->handle->set_acl($path => $acls, version => $version);
     return;
 }
@@ -172,7 +173,7 @@ sub cmd_stat {
     return $self->dump_hash(($self->handle->get($path))[1]);
 }
 
-our @watch_opts = qw(data child data exists all);
+our @watch_opts = qw(child data exists all);
 add_cmd watch => (
     opt_spec => [
         map {
@@ -192,6 +193,7 @@ sub cmd_watch {
     $handle->get($path, watcher => $watch) if $opts->{data};
     $handle->exists($path, watcher => $watch) if $opts->{exists};
     $handle->get_children($path, watcher => $watch) if $opts->{child};
+
     return;
 }
 
