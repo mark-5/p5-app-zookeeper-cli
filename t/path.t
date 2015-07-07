@@ -26,13 +26,13 @@ is collapse_path('foo/bar/./'), 'foo/bar';
 is collapse_path('foo/bar/../'), 'foo';
 
 is get_parent('/foo'), '/';
-is get_parent('/foo/'), '/foo';
+is get_parent('/foo/'), '/';
 is get_parent('/foo/bar'), '/foo';
-is get_parent('/foo/bar/'), '/foo/bar';
+is get_parent('/foo/bar/'), '/foo';
 is get_parent('foo'), '';
-is get_parent('foo/'), 'foo';
+is get_parent('foo/'), '';
 is get_parent('foo/bar'), 'foo';
-is get_parent('foo/bar/'), 'foo/bar';
+is get_parent('foo/bar/'), 'foo';
 
 is join_paths(undef, "foo"), "foo";
 is join_paths(undef, "/foo"), "/foo";

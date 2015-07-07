@@ -128,9 +128,8 @@ sub match_options {
 sub match_nodes {
     my ($self, $node) = @_;
     my $collapsed = collapse_path($node || "");
-    $collapsed .= "/" if $node =~ m#(?<=.)/$#;
 
-    my $parent = get_parent($collapsed);
+    my $parent = $node =~ m#(?<=.)/$# ? $collapsed : get_parent($collapsed);
     my @children  = $self->list_children($parent);
     my @qualified = map join_paths($parent, $_), @children;
 

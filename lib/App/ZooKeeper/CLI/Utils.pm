@@ -36,7 +36,7 @@ sub collapse_path {
 
 sub get_parent {
     my ($node) = @_;
-    return $node if $node =~ s#(?<=.)/$##;
+    return get_parent($node) if $node =~ s#(?<=.)/$##;
 
     if ($node =~ m#^/#) {
         (my $parent = $node) =~ s#/[^/]+$#/#;
