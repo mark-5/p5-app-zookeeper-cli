@@ -37,7 +37,7 @@ is get_parent('foo/bar/'), 'foo/bar';
 is join_paths(undef, "foo"), "foo";
 is join_paths(undef, "/foo"), "/foo";
 is join_paths("foo", undef), "foo";
-is join_paths("foo/", undef), "foo/";
+is join_paths("foo/", undef), "foo";
 is join_paths("foo", "bar"), "foo/bar";
 is join_paths("/foo", "bar"), "/foo/bar";
 is join_paths("/foo", "/bar"), "/foo/bar";

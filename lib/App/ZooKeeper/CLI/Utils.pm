@@ -52,11 +52,19 @@ sub get_parent {
 
 sub join_paths {
     my ($a, $b) = @_;
-    return $b if is_empty_path($a);
-    return $a if is_empty_path($b);
-    $a .= '/' unless $a =~ m|/$|;
-    $b =~ s|^/||;
-    return $a . $b;
+    if (is_empty_path($a)) {
+        $b =~ s#(?<=.)/$##;
+        return $b;
+    } elsif (is_empty_path($b)) {
+        $a =~ s#(?<=.)/$##;
+        return $a;
+    } else {
+        $a .= '/' unless $a =~ m|/$|;
+        $b =~ s|^/||;
+        my $joined = $a . $b;
+        $joined =~ s#(?<=.)/$##;
+        return $joined;
+    }
 }
 
 sub qualify_path {
