@@ -34,15 +34,12 @@ sub _setup_cmds {
 }
 
 add_cmd add_auth => (
-    opt_spec => [
-        [ "encoded|e" ]
-    ],
     usage_desc => "<scheme> <credentials>",
 );
 sub cmd_add_auth {
     my ($self, $opts, $args) = @_;
     my ($scheme, $creds) = @$args;
-    $self->handle->add_auth($scheme, $creds, %$opts);
+    $self->handle->add_auth($scheme, $creds);
     return;
 }
 
