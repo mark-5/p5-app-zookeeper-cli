@@ -11,6 +11,7 @@ is collapse_path(undef), "";
 is collapse_path('/'), '/';
 is collapse_path('/foo/bar'), '/foo/bar';
 is collapse_path('/foo/.'), '/foo';
+is collapse_path('/foo/..'), '/';
 is collapse_path('/foo/./bar'), '/foo/bar';
 is collapse_path('/foo/bar/baz/..'), '/foo/bar';
 is collapse_path('/foo/bar/baz/../boz'), '/foo/bar/boz';

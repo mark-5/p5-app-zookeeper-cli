@@ -30,7 +30,8 @@ sub collapse_path {
     }
 
     my $collapsed = reduce {join_paths($a, $b)} @parts;
-    $collapsed = "/$collapsed" if $path =~ m#^/#;
+    $collapsed  //= '';
+    $collapsed    = "/$collapsed" if $path =~ m#^/#;
     return $collapsed || '/';
 }
 
@@ -41,12 +42,12 @@ sub get_parent {
     if ($node =~ m#^/#) {
         (my $parent = $node) =~ s#/[^/]+$#/#;
         $parent =~ s#(?<=.)/$##;
-        return $parent || '';
+        return $parent // '';
     } else {
         return '' unless $node =~ m#/#;
         (my $parent = $node) =~ s#/[^/]+$#/#;
         $parent =~ s#(?<=.)/$##;
-        return $parent || '';
+        return $parent // '';
     }
 }
 
