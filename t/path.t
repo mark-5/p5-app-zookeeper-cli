@@ -9,6 +9,8 @@ use App::ZooKeeper::CLI::Utils qw(
 
 is collapse_path(undef), "";
 is collapse_path('/'), '/';
+is collapse_path('/..'), '/';
+is collapse_path('/../foo'), '/foo';
 is collapse_path('/foo/bar'), '/foo/bar';
 is collapse_path('/foo/.'), '/foo';
 is collapse_path('/foo/..'), '/';

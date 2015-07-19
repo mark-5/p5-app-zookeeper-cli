@@ -17,6 +17,7 @@ sub collapse_path {
     return "" if is_empty_path($path);
     return $path if $path eq '/';
     my @parts = grep {not is_empty_path($_)} split m|/|, $path;
+    unshift @parts, '/' if $path =~ m#^/#;
 
     for (my $i = 0; $i < @parts; $i++) {
         my $part = $parts[$i];
@@ -24,15 +25,20 @@ sub collapse_path {
             splice @parts, $i, 1;
             $i -= 1;
         } elsif ($part eq '..') {
-            splice @parts, $i - 1, 2;
-            $i -= 2;
+            if ($i >= 2) {
+                splice @parts, $i - 1, 2;
+                $i -= 2;
+            } else {
+                # just remove .. if its first or second
+                # otherwise it'll try to splice from -1 and die
+                splice @parts, $i, 1;
+                $i -= 1;
+            }
         }
     }
 
     my $collapsed = reduce {join_paths($a, $b)} @parts;
-    $collapsed  //= '';
-    $collapsed    = "/$collapsed" if $path =~ m#^/#;
-    return $collapsed || '/';
+    return $collapsed // '/';
 }
 
 sub get_parent {
