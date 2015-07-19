@@ -1,11 +1,26 @@
 #!/usr/bin/env perl
 use strict; use warnings;
 use App::ZooKeeper::CLI;
+use AE;
 use Term::ReadLine;
 use Try::Tiny;
+use ZooKeeper::Constants;
 
-my $hosts = shift || 'localhost:2181';
-my $cli   = App::ZooKeeper::CLI->new(hosts => $hosts);
+my $hosts = $ARGV[0] || 'localhost:2181';
+
+my $cv    = AE::cv;
+my $timer = AE::timer 10, 0, sub { $cv->send };
+my $zkh   = ZooKeeper->new(
+    hosts   => $hosts,
+    watcher => sub { $cv->send($_[0]) },
+);
+my $cli = App::ZooKeeper::CLI->new(hosts => $hosts, handle => $zkh);
+
+# wait until connection is confirmed or times out
+my $event = $cv->recv;
+if (!$event) {
+    die "Could not connect to $hosts: timed out ater 10s\n";
+}
 
 my $read = -t STDIN ? sub { $cli->readline } : sub { <STDIN> };
 while (defined (my $line = $read->())) {
