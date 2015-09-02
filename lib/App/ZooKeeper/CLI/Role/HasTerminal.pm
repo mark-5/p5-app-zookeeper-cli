@@ -7,6 +7,7 @@ use App::ZooKeeper::CLI::Utils qw(
     collapse_path
     get_parent
     join_paths
+    qualify_path
 );
 use AE;
 use Moo::Role;
@@ -102,7 +103,7 @@ sub autocomplete {
     if ($in_match and $last_arg =~ /^-/) {
         return $self->match_options($cmd, $last_arg);
     } else {
-        return $self->match_nodes($in_match ? $last_arg : "");
+        return $self->match_nodes($in_match ? $last_arg : ".");
     }
 }
 
@@ -127,9 +128,9 @@ sub match_options {
 
 sub match_nodes {
     my ($self, $node) = @_;
-    my $collapsed = collapse_path($node || "");
+    my $collapsed = collapse_path(qualify_path($node => $self->current_node));
 
-    my $parent = $node =~ m#(?<=.)/$# ? $collapsed : get_parent($collapsed);
+    my $parent    = $node =~ m#(?<=.)/$# ? $collapsed : get_parent($collapsed);
     my @children  = $self->list_children($parent);
     my @qualified = map join_paths($parent, $_), @children;
 
@@ -139,6 +140,14 @@ sub match_nodes {
             join_paths($matches[0], $_)
         } try { $self->list_children($matches[0]) };
     }
+
+    my $matching_ending = $collapsed;
+    if ($node =~ m#/$#) {
+        $matching_ending .= '/' unless $matching_ending =~ m#/$#
+    } else {
+        $matching_ending =~ s#/$##;
+    }
+    s#^$matching_ending#$node# for @matches;
     return @matches;
 }
 

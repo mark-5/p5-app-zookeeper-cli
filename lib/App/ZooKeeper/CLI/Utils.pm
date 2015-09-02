@@ -76,7 +76,7 @@ sub join_paths {
 
 sub qualify_path {
     my ($path, $current_node) = @_;
-    my $qualified = substr($path, 0, 1) eq '/' ? $path : join_paths($current_node, $path);
+    my $qualified = substr($path//'', 0, 1) eq '/' ? $path : join_paths($current_node, $path);
     return collapse_path($qualified);
 }
 
